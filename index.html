@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <title>Rizz Live – Policy Hub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html { font-size: 16px; -webkit-text-size-adjust: 100%; }
+
+    @keyframes fadeUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes shimmer { 0%{background-position:-200% center} 100%{background-position:200% center} }
+    @keyframes twinkle { 0%,100%{opacity:0.1;transform:scale(0.7)} 50%{opacity:1;transform:scale(1.2)} }
+
+    /* ── TWINKLING STARS CANVAS ── */
+    #stars-canvas {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      pointer-events: none; z-index: 0;
+    }
+
+    @keyframes logoGlow {
+      0%,100%{box-shadow:0 4px 20px rgba(160,80,255,0.25),0 1px 4px rgba(0,0,0,0.08)}
+      50%{box-shadow:0 8px 36px rgba(160,80,255,0.45),0 1px 4px rgba(0,0,0,0.08)}
+    }
+    @keyframes badgePulse {
+      0%,100%{box-shadow:0 0 0 0 rgba(160,80,255,0.4)}
+      60%{box-shadow:0 0 0 8px rgba(160,80,255,0)}
+    }
+    @keyframes accOpen { from{opacity:0;transform:translateY(-6px)} to{opacity:1;transform:translateY(0)} }
+
+    body {
+      background: #f5f3ff;
+      font-family: 'Nunito', sans-serif;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+      min-height: 100vh;
+    }
+
+    .blob { position: fixed; border-radius: 50%; pointer-events: none; z-index: 0; filter: blur(80px); opacity: 0.28; }
+    .blob-1 { width: 280px; height: 280px; background: #c084fc; top: -60px; right: -60px; }
+    .blob-2 { width: 240px; height: 240px; background: #818cf8; bottom: -50px; left: -50px; }
+    .blob-3 { width: 160px; height: 160px; background: #f9a8d4; top: 40%; left: 60%; }
+
+    .page { display: none; position: relative; z-index: 1; padding: 24px 16px 56px; max-width: 480px; margin: 0 auto; min-height: 100vh; }
+    .page.active { display: block; animation: fadeUp 0.4s ease both; }
+
+    /* ── HEADER CARD ── */
+    .header-card {
+      background: #fff; border-radius: 20px; border: 1px solid rgba(160,80,255,0.15);
+      padding: 14px 18px; display: flex; align-items: center; gap: 14px; margin-bottom: 18px;
+      box-shadow: 0 2px 16px rgba(120,60,220,0.08), 0 1px 3px rgba(0,0,0,0.04);
+    }
+    .header-logo {
+      width: 52px; height: 52px; border-radius: 14px; overflow: hidden; flex-shrink: 0;
+      animation: logoGlow 3.5s ease-in-out infinite;
+      background: linear-gradient(135deg, #f3e8ff, #ede9fe);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .header-logo img { width: 100%; height: 100%; object-fit: cover; border-radius: 14px; }
+    .logo-fallback { font-family: 'Outfit', sans-serif; font-size: 22px; font-weight: 800; background: linear-gradient(135deg, #a855f7, #6366f1); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .brand { font-family: 'Outfit', sans-serif; font-size: 18px; font-weight: 800; color: #1e1b4b; letter-spacing: 0.02em; }
+    .tagline { font-size: 12px; color: #7c6fa0; margin-top: 1px; }
+
+    .back-btn {
+      display: inline-flex; align-items: center; gap: 7px;
+      background: #fff; border: 1px solid rgba(168,85,247,0.2);
+      border-radius: 100px; padding: 9px 18px;
+      font-size: 13px; font-weight: 600; color: #7c3aed;
+      cursor: pointer; text-decoration: none;
+      box-shadow: 0 2px 10px rgba(120,60,220,0.08);
+      transition: all 0.2s; margin-bottom: 20px; touch-action: manipulation;
+    }
+    .back-btn:active { transform: scale(0.96); }
+
+    .section-head { text-align: center; margin-bottom: 22px; }
+    .badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: linear-gradient(90deg, #a855f7, #6366f1);
+      color: #fff; font-size: 11px; font-weight: 700; letter-spacing: 0.1em;
+      padding: 5px 16px; border-radius: 100px; margin-bottom: 12px;
+      text-transform: uppercase; animation: badgePulse 2.5s ease-in-out infinite;
+    }
+    .page-title { font-family: 'Outfit', sans-serif; font-size: 28px; font-weight: 800; color: #1e1b4b; letter-spacing: -0.02em; }
+    .page-title .accent { background: linear-gradient(90deg, #a855f7, #6366f1, #a855f7); background-size: 200% auto; -webkit-background-clip: text; -webkit-text-fill-color: transparent; animation: shimmer 3s linear infinite; }
+    .title-line { width: 40px; height: 3px; background: linear-gradient(90deg, #a855f7, #6366f1); border-radius: 100px; margin: 10px auto 0; }
+
+    .section-label { font-size: 10px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: #9882c0; margin-bottom: 10px; padding-left: 2px; }
+    .group { margin-bottom: 22px; }
+    .group:nth-child(1){animation:fadeUp 0.4s 0.12s ease both}
+    .group:nth-child(2){animation:fadeUp 0.4s 0.2s ease both}
+    .group:nth-child(3){animation:fadeUp 0.4s 0.28s ease both}
+
+    .nav-btn {
+      display: flex; align-items: center; gap: 14px; width: 100%; background: #fff;
+      border: 1px solid rgba(160,80,255,0.12); border-radius: 18px; padding: 15px 16px; margin-bottom: 10px;
+      text-decoration: none; color: inherit; cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+      box-shadow: 0 1px 6px rgba(120,60,220,0.05); touch-action: manipulation; -webkit-appearance: none; background-clip: padding-box;
+    }
+    .nav-btn:active { transform: scale(0.97); box-shadow: 0 2px 12px rgba(120,60,220,0.14); }
+
+    .icon-wrap { width: 46px; height: 46px; border-radius: 13px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 22px; }
+    .ic-purple  { background: linear-gradient(135deg, #f3e8ff, #ede9fe); }
+    .ic-indigo  { background: linear-gradient(135deg, #eef2ff, #e0e7ff); }
+    .ic-pink    { background: linear-gradient(135deg, #fdf2f8, #fce7f3); }
+    .ic-emerald { background: linear-gradient(135deg, #d1fae5, #a7f3d0); }
+    .ic-amber   { background: linear-gradient(135deg, #fef3c7, #fde68a); }
+
+    .btn-content { flex: 1; }
+    .btn-title { font-family: 'Outfit', sans-serif; font-size: 14px; font-weight: 700; color: #1e1b4b; letter-spacing: 0.01em; }
+    .btn-sub { font-size: 12px; color: #7c6fa0; margin-top: 3px; }
+    .btn-arrow { width: 30px; height: 30px; border-radius: 9px; background: linear-gradient(135deg, #f3e8ff, #ede9fe); display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 16px; color: #a855f7; font-weight: 700; }
+
+    .nav-btn.btn-host { border-color: rgba(168,85,247,0.18); }
+    .nav-btn.btn-host:hover, .nav-btn.btn-host:active {
+      background: linear-gradient(135deg, #faf5ff, #f3e8ff);
+      border-color: rgba(168,85,247,0.5);
+      box-shadow: 0 6px 24px rgba(168,85,247,0.18);
+    }
+    .nav-btn.btn-host:hover .btn-arrow { background: linear-gradient(135deg, #a855f7, #7c3aed); color: #fff; }
+    .nav-btn.btn-host:hover .btn-title { color: #7c3aed; }
+
+    .nav-btn.btn-agency { border-color: rgba(99,102,241,0.18); }
+    .nav-btn.btn-agency:hover, .nav-btn.btn-agency:active {
+      background: linear-gradient(135deg, #eef2ff, #e0e7ff);
+      border-color: rgba(99,102,241,0.5);
+      box-shadow: 0 6px 24px rgba(99,102,241,0.18);
+    }
+    .nav-btn.btn-agency:hover .btn-arrow { background: linear-gradient(135deg, #6366f1, #4f46e5); color: #fff; }
+    .nav-btn.btn-agency:hover .btn-title { color: #4f46e5; }
+
+    .nav-btn.btn-admin { border-color: rgba(245,158,11,0.18); }
+    .nav-btn.btn-admin:hover, .nav-btn.btn-admin:active {
+      background: linear-gradient(135deg, #fffbeb, #fef3c7);
+      border-color: rgba(245,158,11,0.5);
+      box-shadow: 0 6px 24px rgba(245,158,11,0.18);
+    }
+    .nav-btn.btn-admin:hover .btn-arrow { background: linear-gradient(135deg, #f59e0b, #d97706); color: #fff; }
+    .nav-btn.btn-admin:hover .btn-title { color: #d97706; }
+
+    .nav-btn.btn-channel { border-color: rgba(5,150,105,0.18); }
+    .nav-btn.btn-channel:hover, .nav-btn.btn-channel:active {
+      background: linear-gradient(135deg, #ecfdf5, #d1fae5);
+      border-color: rgba(5,150,105,0.45);
+      box-shadow: 0 6px 24px rgba(5,150,105,0.15);
+    }
+    .nav-btn.btn-channel:hover .icon-wrap { background: linear-gradient(135deg, #a7f3d0, #6ee7b7); }
+    .nav-btn.btn-channel:hover .btn-arrow { background: linear-gradient(135deg, #059669, #047857); color: #fff; }
+    .nav-btn.btn-channel:hover .btn-title { color: #047857; }
+    .nav-btn.btn-channel:hover .btn-sub { color: #34d399; }
+
+    .divider { height: 1px; background: linear-gradient(90deg, transparent, rgba(168,85,247,0.2), transparent); margin: 14px 0 18px; }
+
+    .footer { text-align: center; font-size: 12px; color: #9882c0; margin-top: 14px; letter-spacing: 0.04em; }
+    .footer .rl { background: linear-gradient(90deg, #a855f7, #6366f1); background-size: 200% auto; -webkit-background-clip: text; -webkit-text-fill-color: transparent; animation: shimmer 3s linear infinite; font-weight: 700; }
+
+    .acc { background: #fff; border: 1px solid rgba(160,80,255,0.13); border-radius: 18px; margin-bottom: 12px; overflow: hidden; box-shadow: 0 2px 12px rgba(120,60,220,0.06); }
+    .acc:nth-child(1){animation:fadeUp 0.4s 0.14s ease both}
+    .acc:nth-child(2){animation:fadeUp 0.4s 0.21s ease both}
+    .acc:nth-child(3){animation:fadeUp 0.4s 0.28s ease both}
+    .acc:nth-child(4){animation:fadeUp 0.4s 0.35s ease both}
+    .acc:nth-child(5){animation:fadeUp 0.4s 0.42s ease both}
+    .acc:nth-child(6){animation:fadeUp 0.4s 0.49s ease both}
+
+    .acc-header { display: flex; align-items: center; gap: 12px; padding: 16px 18px; cursor: pointer; transition: background 0.2s; user-select: none; touch-action: manipulation; }
+    .acc-header:active { background: rgba(168,85,247,0.04); }
+    .acc-num { width: 34px; height: 34px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-family: 'Outfit', sans-serif; font-size: 14px; font-weight: 800; color: #fff; flex-shrink: 0; }
+    .n-purple  { background: linear-gradient(135deg, #a855f7, #6366f1); }
+    .n-indigo  { background: linear-gradient(135deg, #6366f1, #4f46e5); }
+    .n-emerald { background: linear-gradient(135deg, #10b981, #059669); }
+    .n-amber   { background: linear-gradient(135deg, #f59e0b, #d97706); }
+    .n-pink    { background: linear-gradient(135deg, #ec4899, #be185d); }
+    .n-red     { background: linear-gradient(135deg, #ef4444, #dc2626); }
+
+    .acc-title { font-family: 'Outfit', sans-serif; font-size: 15px; font-weight: 700; color: #1e1b4b; flex: 1; line-height: 1.3; letter-spacing: -0.01em; }
+    .acc-chevron { font-size: 20px; color: #a855f7; transition: transform 0.3s; flex-shrink: 0; }
+    .acc.open .acc-chevron { transform: rotate(180deg); }
+    .acc-body { display: none; padding: 0 16px 16px; animation: accOpen 0.3s ease; }
+    .acc.open .acc-body { display: block; }
+
+    .sub-head { display: flex; align-items: center; gap: 8px; font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 800; color: #7c3aed; margin: 14px 0 10px; border-left: 3px solid #a855f7; padding-left: 10px; }
+
+    .tbl-wrap { overflow-x: visible; margin-bottom: 10px; border-radius: 12px; }
+    .tbl { width: 100%; border-collapse: collapse; border-radius: 12px; overflow: hidden; }
+    .tbl thead tr { background: linear-gradient(90deg, rgba(168,85,247,0.15), rgba(99,102,241,0.12)); }
+    .tbl th { padding: 8px 6px; font-size: 9px; font-weight: 700; color: #5b21b6; letter-spacing: 0.04em; text-transform: uppercase; text-align: left; white-space: nowrap; }
+    .tbl td { padding: 8px 6px; font-size: 12px; color: #374151; border-bottom: 1px solid rgba(168,85,247,0.08); word-break: break-word; }
+    .tbl tr:last-child td { border-bottom: none; }
+    .tbl tr:nth-child(even) td { background: rgba(168,85,247,0.03); }
+
+    .val-gold { color: #d97706; font-weight: 700; }
+    .val-green { color: #059669; font-weight: 700; }
+    .val-pink { color: #db2777; font-weight: 700; }
+    .val-purple { color: #7c3aed; font-weight: 700; }
+    .val-red { color: #dc2626; font-weight: 700; }
+    .hl-gold { color: #d97706; font-weight: 700; }
+    .hl-green { color: #059669; font-weight: 700; }
+    .hl-purple { color: #7c3aed; font-weight: 700; }
+    .hl-pink { color: #db2777; font-weight: 700; }
+    .hl-red { color: #dc2626; font-weight: 700; }
+
+    .example-box, .info-box { background: linear-gradient(135deg, rgba(168,85,247,0.07), rgba(99,102,241,0.05)); border: 1px solid rgba(168,85,247,0.18); border-radius: 12px; padding: 12px 14px; margin: 10px 0; }
+    .example-label, .info-label { font-size: 10px; font-weight: 700; letter-spacing: 0.12em; color: #a855f7; text-transform: uppercase; margin-bottom: 6px; }
+    .example-box p, .info-box p { font-size: 13px; color: #374151; line-height: 1.65; }
+
+    .strict-box { background: linear-gradient(135deg, rgba(239,68,68,0.07), rgba(220,38,38,0.04)); border: 1px solid rgba(239,68,68,0.22); border-radius: 12px; padding: 12px 14px; margin: 10px 0; }
+    .strict-label { font-size: 10px; font-weight: 700; letter-spacing: 0.12em; color: #dc2626; text-transform: uppercase; margin-bottom: 6px; }
+    .strict-box p { font-size: 13px; color: #374151; line-height: 1.65; }
+
+    .amber-box { background: linear-gradient(135deg, rgba(245,158,11,0.07), rgba(217,119,6,0.04)); border: 1px solid rgba(245,158,11,0.22); border-radius: 12px; padding: 12px 14px; margin: 10px 0; }
+    .amber-label { font-size: 10px; font-weight: 700; letter-spacing: 0.12em; color: #d97706; text-transform: uppercase; margin-bottom: 6px; }
+    .amber-box p { font-size: 13px; color: #374151; line-height: 1.65; }
+
+    .green-box { background: linear-gradient(135deg, rgba(16,185,129,0.07), rgba(5,150,105,0.04)); border: 1px solid rgba(16,185,129,0.22); border-radius: 12px; padding: 12px 14px; margin: 10px 0; }
+    .green-label { font-size: 10px; font-weight: 700; letter-spacing: 0.12em; color: #059669; text-transform: uppercase; margin-bottom: 6px; }
+    .green-box p { font-size: 13px; color: #374151; line-height: 1.65; }
+
+    .blist { list-style: none; margin: 8px 0; }
+    .blist li { display: flex; align-items: flex-start; gap: 10px; font-size: 13px; color: #374151; line-height: 1.6; padding: 4px 0; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 5px; }
+    .dot-green  { background: #10b981; }
+    .dot-gold   { background: #d97706; }
+    .dot-purple { background: #a855f7; }
+    .dot-pink   { background: #ec4899; }
+    .dot-red    { background: #ef4444; }
+    .dot-blue   { background: #3b82f6; }
+    .dot-amber  { background: #f59e0b; }
+
+    .stat-row { display: flex; gap: 10px; margin: 10px 0; }
+    .stat-chip { flex: 1; background: linear-gradient(135deg, rgba(168,85,247,0.08), rgba(99,102,241,0.06)); border: 1px solid rgba(168,85,247,0.14); border-radius: 10px; padding: 10px 12px; text-align: center; }
+    .stat-chip .sv { font-family: 'Outfit', sans-serif; font-size: 18px; font-weight: 800; color: #7c3aed; }
+    .stat-chip .sl { font-size: 11px; color: #9882c0; margin-top: 2px; }
+
+    .time-row { display: flex; align-items: center; gap: 8px; margin: 10px 0; }
+    .time-chip { flex: 1; background: linear-gradient(135deg, rgba(168,85,247,0.1), rgba(99,102,241,0.07)); border: 1px solid rgba(168,85,247,0.2); border-radius: 12px; padding: 10px 8px; text-align: center; }
+    .time-chip .tc-label { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #9882c0; margin-bottom: 4px; }
+    .time-chip .tc-val { font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 800; color: #7c3aed; }
+    .time-chip .tc-tz { font-size: 11px; color: #a855f7; margin-top: 2px; font-weight: 600; }
+    .time-arrow { font-size: 18px; color: #a855f7; flex-shrink: 0; }
+
+    /* Numbered list for admin policy */
+    .nlist { list-style: none; margin: 8px 0; counter-reset: nlist; }
+    .nlist li { display: flex; align-items: flex-start; gap: 10px; font-size: 13px; color: #374151; line-height: 1.6; padding: 5px 0; counter-increment: nlist; }
+    .nlist li::before { content: counter(nlist); min-width: 22px; height: 22px; border-radius: 6px; background: linear-gradient(135deg, #a855f7, #6366f1); color: #fff; font-size: 11px; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+  </style>
+</head>
+<body>
+
+<canvas id="stars-canvas"></canvas>
+<div class="blob blob-1"></div>
+<div class="blob blob-2"></div>
+<div class="blob blob-3"></div>
+
+<!-- ═══════════════ PAGE 1: HOME ═══════════════ -->
+<div class="page active" id="page-home">
+
+  <div class="header-card">
+    <div class="header-logo">
+      <img src="RizzLive.png" alt="Rizz Live" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+      <span class="logo-fallback" style="display:none">R</span>
+    </div>
+    <div>
+      <div class="brand">RIZZ LIVE</div>
+      <div class="tagline" data-i18n="tagline">Live Streaming Platform</div>
+    </div>
+  </div>
+
+  <div class="section-head" style="animation:fadeUp 0.4s 0.06s ease both;">
+    <div class="badge" data-i18n="badge_home">📋 Official Documents</div>
+    <div class="page-title">Rizz Live <span class="accent" data-i18n="policy_word">Policy</span></div>
+    <div class="title-line"></div>
+  </div>
+
+
+  <div class="group">
+    <div class="section-label" data-i18n="label_policies">Policies</div>
+    <button class="nav-btn btn-host" onclick="showPage('page-host')">
+      <div class="icon-wrap ic-purple">🎙️</div>
+      <div class="btn-content">
+        <div class="btn-title" data-i18n="host_policy_title">HOST POLICY</div>
+        <div class="btn-sub" data-i18n="host_policy_sub">Rules &amp; guidelines for hosts</div>
+      </div>
+      <div class="btn-arrow">›</div>
+    </button>
+    <button class="nav-btn btn-agency" onclick="showPage('page-agency')">
+      <div class="icon-wrap ic-indigo">🏢</div>
+      <div class="btn-content">
+        <div class="btn-title" data-i18n="agency_policy_title">AGENCY POLICY</div>
+        <div class="btn-sub" data-i18n="agency_policy_sub">Agency terms &amp; conditions</div>
+      </div>
+      <div class="btn-arrow">›</div>
+    </button>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="group">
+    <div class="section-label" data-i18n="label_hiring">Hiring Open Roles</div>
+    <button class="nav-btn btn-admin" onclick="showPage('page-admin')">
+      <div class="icon-wrap ic-amber">👑</div>
+      <div class="btn-content">
+        <div class="btn-title" data-i18n="admin_policy_title">COUNTRY ADMIN, SUPER ADMIN &amp; ADMIN</div>
+        <div class="btn-sub" data-i18n="admin_policy_sub">Admin roles &amp; commission structure</div>
+      </div>
+      <div class="btn-arrow">›</div>
+    </button>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="group">
+    <div class="section-label" data-i18n="label_contact">Contact</div>
+    <div class="nav-btn btn-channel" onclick="openLink('https://chat.whatsapp.com/Lf1CgwSUZSRKamClwBOBWQ')" role="link" style="cursor:pointer;">
+      <div class="icon-wrap ic-emerald">📢</div>
+      <div class="btn-content">
+        <div class="btn-title" data-i18n="channel_title">JOIN OFFICIAL CHANNEL</div>
+        <div class="btn-sub" data-i18n="channel_sub">Daily updates on WhatsApp</div>
+      </div>
+      <div class="btn-arrow">›</div>
+    </div>
+  </div>
+
+  <div class="footer"><span class="rl">Rizz Live</span> &nbsp;·&nbsp; <span data-i18n="all_rights">All Rights Reserved</span></div>
+</div>
+
+
+<!-- ═══════════════ PAGE 2: HOST POLICY ═══════════════ -->
+<div class="page" id="page-host">
+  <div class="header-card">
+    <div class="header-logo">
+      <img src="RizzLive.png" alt="Rizz Live" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+      <span class="logo-fallback" style="display:none">R</span>
+    </div>
+    <div><div class="brand">RIZZ LIVE</div><div class="tagline" data-i18n="tagline">Live Streaming Platform</div></div>
+  </div>
+  <button class="back-btn" onclick="showPage('page-home')">‹ <span data-i18n="back">Back</span></button>
+  <div class="section-head">
+    <div class="badge" data-i18n="badge_host">🎙 Host Guidelines</div>
+    <div class="page-title"><span data-i18n="host_word">Host</span> <span class="accent" data-i18n="policy_word">Policy</span></div>
+    <div class="title-line"></div>
+  </div>
+
+  <!-- S1: Salary Structure -->
+  <div class="acc open" id="h-acc1">
+    <div class="acc-header" onclick="toggle('h-acc1')">
+      <div class="acc-num n-purple">1</div>
+      <div class="acc-title">Host Salary Structure</div>
+      <div class="acc-chevron">⌄</div>
+    </div>
+    <div class="acc-body">
+      <div class="sub-head">1.1 Personal Gift Share</div>
+      <div class="tbl-wrap">
+        <table class="tbl">
+          <thead><tr><th>Basic Share</th></tr></thead>
+          <tbody><tr><td>Host Share &nbsp;<span class="val-green">100%</span></td></tr></tbody>
+        </table>
+      </div>
+      <ul class="blist">
+        <li><span class="dot dot-green"></span><span>100% Personal Gift Share from viewers during live broadcast</span></li>
+        <li><span class="dot dot-green"></span><span>All virtual gifts credited to the host in the form of Rubies</span></li>
+      </ul>
+      <div class="example-box">
+        <div class="example-label">🔥 Example</div>
+        <p>If a viewer sends <span class="hl-gold">10,000 Coins</span> during a live broadcast, the host will receive <span class="hl-gold">10,000 Rubies</span>.</p>
+      </div>
+      <div class="amber-box">
+        <div class="amber-label">💱 Ruby Conversion</div>
+        <p><span class="hl-gold">20,000 Rubies = 1 USD</span></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- S2: Reward Rally -->
+  <div class="acc" id="h-acc2">
+    <div class="acc-header" onclick="toggle('h-acc2')">
+      <div class="acc-num n-indigo">2</div>
+      <div class="acc-title">Reward Rally (Middle East)</div>
+      <div class="acc-chevron">⌄</div>
+    </div>
+    <div class="acc-body">
+      <div class="tbl-wrap">
+        <table class="tbl">
+          <thead><tr><th>Min Host Target</th><th>Valid Time</th><th>Daily Ruby Reward</th></tr></thead>
+          <tbody><tr><td><span class="val-gold">100K</span></td><td><span class="val-pink">1 Hour</span></td><td><span class="val-green">40%</span></td></tr></tbody>
+        </table>
+      </div>
+      <ul class="blist" style="margin-top:10px;">
+        <li><span class="dot dot-purple"></span><span>Exclusive for Middle East LIVE creators under official registered guilds</span></li>
+        <li><span class="dot dot-green"></span><span>Earn <strong>40% bonus</strong> when you earn more than <strong>100K Ruby</strong> and have <strong>1 hour</strong> of active microphone</span></li>
+        <li><span class="dot dot-pink"></span><span>No bonus for daily income less than 100K Ruby</span></li>
+        <li><span class="dot dot-gold"></span><span>More Streams, More Earnings — No Cap, No Hidden Terms</span></li>
+      </ul>
+      <div class="sub-head" style="color:#6366f1;border-color:#6366f1;">Core Rules</div>
+      <ul class="blist">
+        <li><span class="dot dot-purple"></span><span><strong>Mandatory Pre-qualification:</strong> Minimum 1 hour valid live streaming within a single day (00:00–23:59 Middle East Standard Time)</span></li>
+        <li><span class="dot dot-purple"></span><span><strong>Income Threshold:</strong> Daily Ruby income must reach or exceed <strong>100K</strong> in the same day</span></li>
+        <li><span class="dot dot-purple"></span><span><strong>Bonus Ratio:</strong> 40% bonus based on total valid daily earned Ruby</span></li>
+        <li><span class="dot dot-purple"></span><span><strong>Automatic Issuance:</strong> Bonus credited to your account at <strong>00:00 PST the next day</strong> — no manual application required</span></li>
+      </ul>
+      <div class="example-box">
+        <div class="example-label">🔥 Example</div>
+        <p>If a host receives <span class="hl-gold">500K Rubies</span>, total = <span class="hl-gold">500K + (500,000 × 40%) = 700,000 Rubies</span></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- S3: New Host Guarantee -->
+  <div class="acc" id="h-acc3">
+    <div class="acc-header" onclick="toggle('h-acc3')">
+      <div class="acc-num n-emerald">3</div>
+      <div class="acc-title">New Host Guarantee Policy</div>
+      <div class="acc-chevron">⌄</div>
+    </div>
+    <div class="acc-body">
+      <div class="tbl-wrap">
+        <table class="tbl">
+          <thead><tr><th>Cycle</th><th>Weekly Ruby Task</th><th>Valid Days</th><th>Valid Hours</th><th>Guarantee</th></tr></thead>
+          <tbody>
+            <tr><td>Week 1</td><td>0</td><td style="text-align:center"><span class="val-pink">4</span></td><td style="text-align:center"><span class="val-pink">10</span></td><td><span class="val-green">$5</span></td></tr>
+            <tr><td>Week 2</td><td><span class="val-gold">50,000</span></td><td style="text-align:center"><span class="val-pink">4</span></td><td style="text-align:center"><span class="val-pink">10</span></td><td><span class="val-green">$5</span></td></tr>
+            <tr><td>Week 3</td><td><span class="val-gold">100,000</span></td><td style="text-align:center"><span class="val-pink">4</span></td><td style="text-align:center"><span class="val-pink">10</span></td><td><span class="val-green">$5</span></td></tr>
+            <tr><td>Week 4</td><td><span class="val-gold">150,000</span></td><td style="text-align:center"><span class="val-pink">4</span></td><td style="text-align:center"><span class="val-pink">10</span></td><td><span class="val-green">$5</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <ul class="blist" style="margin-top:10px;">
+        <li><span class="dot dot-green"></span><span>New hosts must pass operational review and approval to be eligible</span></li>
+        <li><span class="dot dot-pink"></span><span><strong>Week 1:</strong> No target — guarantee given regardless of task completion</span></li>
+        <li><span class="dot dot-pink"></span><span><strong>Week 2:</strong> 50,000 Ruby</span></li>
+        <li><span class="dot dot-pink"></span><span><strong>Week 3:</strong> 100,000 Ruby</span></li>
+        <li><span class="dot dot-pink"></span><span><strong>Week 4:</strong> 150,000 Ruby</span></li>
+        <li><span class="dot dot-purple"></span><span>Missing one week's target <strong>does not cancel</strong> next week's guarantee</span></li>
+        <li><span class="dot dot-gold"></span><span>If duration/task requirements not met → salary per basic policy</span></li>
+        <li><span class="dot dot-red"></span><span>From <strong>Week 5 onward</strong>, only basic policy applies</span></li>
+        <li><span class="dot dot-blue"></span><span>Outstanding performers may have their task stage adjusted by host manager</span></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- S4: Sensual Category -->
+  <div class="acc" id="h-acc4">
+    <div class="acc-header" onclick="toggle('h-acc4')">
+      <div class="acc-num n-pink">4</div>
+      <div class="acc-title">Sensual Category Host Policy</div>
+      <div class="acc-chevron">⌄</div>
+    </div>
+    <div class="acc-body">
+      <div class="tbl-wrap">
+        <table class="tbl">
+          <thead><tr><th>Cycle</th><th>Weekly Ruby Task</th><th>Valid Days</th><th>Valid Hours</th><th>Guarantee</th></tr></thead>
+          <tbody>
+            <tr><td>Week 1</td><td>0</td><td style="text-align:center"><span class="val-pink">4</span></td><td style="text-align:center"><span class="val-pink">10</span></td><td><span class="val-green">$15</span></td></tr>
+            <tr><td>Week 2</td><td><span class="val-gold">100,000</span></td><td style="text-align:center"><span class="val-pink">4</span></td><td style="text-align:center"><span class="val-pink">10</span></td><td><span class="val-green">$15</span></td></tr>
+            <tr><td>Week 3</td><td><span class="val-gold">150,000</span></td><td style="text-align:center"><span class="val-pink">4</span></td><td style="text-align:center"><span class="val-pink">10</span></td><td><span class="val-green">$15</span></td></tr>
+            <tr><td>Week 4</td><td><span class="val-gold">200,000</span></td><td style="text-align:center"><span class="val-pink">4</span></td><td style="text-align:center"><span class="val-pink">10</span></td><td><span class="val-green">$15</span></td></tr>
+            <tr><td>Week 5+</td><td><span class="val-gold">300,000</span></td><td style="text-align:center"><span class="val-pink">4</span></td><td style="text-align:center"><span class="val-pink">10</span></td><td><span class="val-green">$15</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <ul class="blist" style="margin-top:10px;">
+        <li><span class="dot dot-green"></span><span>Only <strong>approved hosts</strong> can join — must pass official operational review</span></li>
+        <li><span class="dot dot-pink"></span><span><strong>Week 1:</strong> No target — guarantee pay given</span></li>
+        <li><span class="dot dot-pink"></span><span><strong>Week 2:</strong> 100,000 Ruby</span></li>
+        <li><span class="dot dot-pink"></span><span><strong>Week 3:</strong> 150,000 Ruby</span></li>
+        <li><span class="dot dot-pink"></span><span><strong>Week 4:</strong> 200,000 Ruby</span></li>
+        <li><span class="dot dot-pink"></span><span><strong>Week 5+:</strong> 300,000 Ruby</span></li>
+        <li><span class="dot dot-purple"></span><span>Missing one week's target <strong>does not cancel</strong> next week's guarantee</span></li>
+        <li><span class="dot dot-gold"></span><span>Targets not met → salary follows basic policy</span></li>
+      </ul>
+      <div class="divider"></div>
+      <div class="sub-head" style="color:#ec4899;border-color:#ec4899;">4.1 Requirements</div>
+      <ul class="blist">
+        <li><span class="dot dot-green"></span><span>Good image, neat appearance, appropriate attire aligning with platform positioning</span></li>
+        <li><span class="dot dot-green"></span><span>Serious attitude, adherence to live schedules, ensuring broadcast duration</span></li>
+        <li><span class="dot dot-green"></span><span>Clean and tidy live background, clear video and audio</span></li>
+        <li><span class="dot dot-green"></span><span>Active interaction, timely responses to audience comments</span></li>
+        <li><span class="dot dot-green"></span><span>Cooperation with operational team requirements and platform activities</span></li>
+      </ul>
+      <div class="divider"></div>
+      <div class="sub-head" style="color:#ef4444;border-color:#ef4444;">4.2 Removal from Sensual Host Policy</div>
+      <ul class="blist">
+        <li><span class="dot dot-red"></span><span>Failing to go live at scheduled times or showing passive/negative attitude</span></li>
+        <li><span class="dot dot-red"></span><span>Poor attitude toward viewers, ignoring or maliciously responding to feedback</span></li>
+        <li><span class="dot dot-red"></span><span>Consistently messy live environment with no improvement after reminders</span></li>
+        <li><span class="dot dot-red"></span><span>Refusing to cooperate with operational team directives or key events</span></li>
+        <li><span class="dot dot-red"></span><span>Frequent poor video/audio quality without corrective measures</span></li>
+        <li><span class="dot dot-red"></span><span>Violating platform content policies, laws, or regulations</span></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- S5: Management Rules -->
+  <div class="acc" id="h-acc5">
+    <div class="acc-header" onclick="toggle('h-acc5')">
+      <div class="acc-num n-amber">5</div>
+      <div class="acc-title">Management Rules</div>
+      <div class="acc-chevron">⌄</div>
+    </div>
+    <div class="acc-body">
+      <ul class="blist">
+        <li><span class="dot dot-gold"></span><span><strong>Withdrawal Ratio:</strong> <span class="hl-gold">20,000 Rubies = 1 USD</span></span></li>
+        <li><span class="dot dot-gold"></span><span><strong>Salary & commission</strong> settled monthly before the <strong>10th of the following month</strong></span></li>
+        <li><span class="dot dot-red"></span><span>Multiple Host IDs are <strong>strictly prohibited</strong> — rewards and salary will be cancelled if detected</span></li>
+        <li><span class="dot dot-red"></span><span>Agencies must not exploit system loopholes or platform malfunctions for improper profit</span></li>
+      </ul>
+      <div class="divider"></div>
+      <div class="sub-head">5.1 Valid Broadcast Policy</div>
+      <ul class="blist">
+        <li><span class="dot dot-green"></span><span>Host's face must be clearly visible on camera at all times</span></li>
+        <li><span class="dot dot-green"></span><span>Stable internet connection maintained throughout the session</span></li>
+        <li><span class="dot dot-green"></span><span>Clear and audible audio with no major background noise</span></li>
+        <li><span class="dot dot-green"></span><span>Proper lighting ensuring host is clearly visible</span></li>
+        <li><span class="dot dot-green"></span><span>Clean, organized, professional background</span></li>
+        <li><span class="dot dot-green"></span><span>Actively engage with viewers — talking, responding to comments</span></li>
+      </ul>
+      <div class="divider"></div>
+      <div class="sub-head" style="color:#ef4444;border-color:#ef4444;">5.2 Strictly Prohibited</div>
+      <ul class="blist">
+        <li><span class="dot dot-red"></span><span>Verbal abuse, offensive or harmful language toward viewers or others</span></li>
+        <li><span class="dot dot-red"></span><span>Vulgar or inappropriate conduct during live sessions</span></li>
+        <li><span class="dot dot-red"></span><span>Obscene gestures or indecent behavior</span></li>
+        <li><span class="dot dot-red"></span><span>Operating multiple host accounts for unfair advantages</span></li>
+        <li><span class="dot dot-red"></span><span>Exploiting platform loopholes or bugs for personal gain</span></li>
+      </ul>
+      <div class="divider"></div>
+      <div class="sub-head" style="color:#dc2626;border-color:#dc2626;">5.3 Violation & Penalty</div>
+      <ul class="blist">
+        <li><span class="dot dot-red"></span><span>More than <strong>5 policy violations</strong> = serious breach of platform guidelines</span></li>
+        <li><span class="dot dot-red"></span><span>Platform may <strong>deduct salary</strong> partially or fully depending on severity</span></li>
+        <li><span class="dot dot-red"></span><span>Platform may <strong>cancel monthly payout entirely</strong></span></li>
+        <li><span class="dot dot-red"></span><span>Extreme or repeated cases → <strong>permanent account suspension</strong></span></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="footer">© 2026 &nbsp;<span class="rl">Rizz Live</span> &nbsp;·&nbsp; All Rights Reserved</div>
+</div>
+
+
+<!-- ═══════════════ PAGE 3: AGENCY POLICY ═══════════════ -->
+<div class="page" id="page-agency">
+  <div class="header-card">
+    <div class="header-logo">
+      <img src="RizzLive.png" alt="Rizz Live" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+      <span class="logo-fallback" style="display:none">R</span>
+    </div>
+    <div><div class="brand">RIZZ LIVE</div><div class="tagline" data-i18n="tagline">Live Streaming Platform</div></div>
+  </div>
+  <button class="back-btn" onclick="showPage('page-home')">‹ <span data-i18n="back">Back</span></button>
+  <div class="section-head">
+    <div class="badge" data-i18n="badge_agency">🏢 Agency Guidelines</div>
+    <div class="page-title"><span data-i18n="agency_word">Agency</span> <span class="accent" data-i18n="policy_word">Policy</span></div>
+    <div class="title-line"></div>
+  </div>
+
+  <!-- A1: Agency Commission -->
+  <div class="acc open" id="a-acc1">
+    <div class="acc-header" onclick="toggle('a-acc1')">
+      <div class="acc-num n-purple">1</div>
+      <div class="acc-title">Agency Commission Structure</div>
+      <div class="acc-chevron">⌄</div>
+    </div>
+    <div class="acc-body">
+      <div class="tbl-wrap">
+        <table class="tbl">
+          <thead><tr><th>Level</th><th>Monthly Target (Ruby)</th><th>Commission</th></tr></thead>
+          <tbody>
+            <tr><td><span class="val-pink">L1</span></td><td>&lt; 5M</td><td><span class="val-green">10%</span></td></tr>
+            <tr><td><span class="val-pink">L2</span></td><td>5M – 20M</td><td><span class="val-green">12%</span></td></tr>
+            <tr><td><span class="val-pink">L3</span></td><td>20M – 50M</td><td><span class="val-green">14%</span></td></tr>
+            <tr><td><span class="val-pink">L4</span></td><td>50M – 100M</td><td><span class="val-green">17%</span></td></tr>
+            <tr><td><span class="val-pink">L5</span></td><td>≥ 100M</td><td><span class="val-green">20%</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="amber-box" style="margin-top:12px;">
+        <div class="amber-label">💡 How it Works</div>
+        <p><strong>10% commission</strong> credited instantly to agents. The remaining gap commission — based on the agency's final monthly target — is settled in the <strong>first week of the following month</strong>.</p>
+      </div>
+      <div class="example-box">
+        <div class="example-label">🔥 Example</div>
+        <p>If monthly income is <span class="hl-gold">25M</span>, final commission = <span class="hl-gold">25M × 14%</span>. Agency receives 10% daily and the <strong>remaining 4% (25M × 4%)</strong> is paid on the 1st of next month.</p>
+      </div>
+      <div class="divider"></div>
+      <div class="sub-head">Commission Tiers (Hierarchical)</div>
+      <ul class="blist">
+        <li><span class="dot dot-purple"></span><span>Commission rate upgrades <strong>immediately</strong> when revenue crosses each threshold during the month</span></li>
+        <li><span class="dot dot-green"></span><span>Example: Revenue below 4,999,999 → <strong>10%</strong>. Once it exceeds 5M → rate upgrades to <strong>12%</strong></span></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- A2: New Host Guarantee (from Agency side) -->
+  <div class="acc" id="a-acc2">
+    <div class="acc-header" onclick="toggle('a-acc2')">
+      <div class="acc-num n-indigo">2</div>
+      <div class="acc-title">New Host Guarantee (Agency View)</div>
+      <div class="acc-chevron">⌄</div>
+    </div>
+    <div class="acc-body">
+      <div class="tbl-wrap">
+        <table class="tbl">
+          <thead><tr><th>Cycle</th><th>Weekly Ruby Task</th><th>Valid Days</th><th>Valid Hours</th><th>Guarantee</th></tr></thead>
+          <tbody>
+            <tr><td>Week 1</td><td>0</td><td style="text-align:center"><span class="val-pink">4</span></td><td style="text-align:center"><span class="val-pink">10</span></td><td><span class="val-green">$5</span></td></tr>
+            <tr><td>Week 2</td><td><span class="val-gold">50,000</span></td><td style="text-align:center"><span class="val-pink">4</span></td><td style="text-align:center"><span class="val-pink">10</span></td><td><span class="val-green">$5</span></td></tr>
+            <tr><td>Week 3</td><td><span class="val-gold">100,000</span></td><td style="text-align:center"><span class="val-pink">4</span></td><td style="text-align:center"><span class="val-pink">10</span></td><td><span class="val-green">$5</span></td></tr>
+            <tr><td>Week 4</td><td><span class="val-gold">150,000</span></td><td style="text-align:center"><span class="val-pink">4</span></td><td style="text-align:center"><span class="val-pink">10</span></td><td><span class="val-green">$5</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <ul class="blist" style="margin-top:10px;">
+        <li><span class="dot dot-green"></span><span>Each new host must pass operational review to be eligible</span></li>
+        <li><span class="dot dot-purple"></span><span>Failure to complete a weekly task <strong>does not affect</strong> eligibility for the guarantee in the following week</span></li>
+        <li><span class="dot dot-red"></span><span>From Week 5 onward, salary follows basic policy only</span></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- A3: Agency Change Rules -->
+  <div class="acc" id="a-acc3">
+    <div class="acc-header" onclick="toggle('a-acc3')">
+      <div class="acc-num n-emerald">3</div>
+      <div class="acc-title">Agency Change Rules</div>
+      <div class="acc-chevron">⌄</div>
+    </div>
+    <div class="acc-body">
+      <p style="font-size:13px;color:#374151;margin-bottom:8px;">A host can change agency if:</p>
+      <ul class="blist">
+        <li><span class="dot dot-purple"></span><span>No activity for <strong>120 days</strong></span></li>
+        <li><span class="dot dot-purple"></span><span>Cannot contact agency for <strong>2 weeks</strong></span></li>
+        <li><span class="dot dot-purple"></span><span>Both Agency &amp; Host sides agree</span></li>
+      </ul>
+      <div class="strict-box">
+        <div class="strict-label">⚠ Important</div>
+        <p>Any cheating or misuse → <span class="hl-red">Warning / Suspension / Ban</span></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- A4: Platform Rights -->
+  <div class="acc" id="a-acc4">
+    <div class="acc-header" onclick="toggle('a-acc4')">
+      <div class="acc-num n-amber">4</div>
+      <div class="acc-title">Platform Rights & Rules</div>
+      <div class="acc-chevron">⌄</div>
+    </div>
+    <div class="acc-body">
+      <ul class="blist">
+        <li><span class="dot dot-red"></span><span>Platform reserves the right to <strong>adjust incorrect earnings</strong> found during audits</span></li>
+        <li><span class="dot dot-red"></span><span>Platform may <strong>delete fraudulent data</strong> and cancel agency rewards or salary</span></li>
+        <li><span class="dot dot-red"></span><span>Agencies must not exploit system loopholes or platform malfunctions for improper profit</span></li>
+        <li><span class="dot dot-gold"></span><span>Any fraudulent or suspicious data may be nullified <strong>without prior notice</strong></span></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="footer">© 2026 &nbsp;<span class="rl">Rizz Live</span> &nbsp;·&nbsp; All Rights Reserved</div>
+</div>
+
+
+<!-- ═══════════════ PAGE 4: ADMIN POLICY ═══════════════ -->
+<div class="page" id="page-admin">
+  <div class="header-card">
+    <div class="header-logo">
+      <img src="RizzLive.png" alt="Rizz Live" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+      <span class="logo-fallback" style="display:none">R</span>
+    </div>
+    <div><div class="brand">RIZZ LIVE</div><div class="tagline" data-i18n="tagline">Live Streaming Platform</div></div>
+  </div>
+  <button class="back-btn" onclick="showPage('page-home')">‹ <span data-i18n="back">Back</span></button>
+  <div class="section-head">
+    <div class="badge">👑 Hiring Open Roles</div>
+    <div class="page-title">Admin <span class="accent">Policy</span></div>
+    <div class="title-line"></div>
+  </div>
+
+  <div class="info-box" style="margin-bottom:16px;">
+    <div class="info-label">📋 Three Positions</div>
+    <p>This policy covers three admin roles: <strong>Admin</strong>, <strong>Super Admin</strong>, and <strong>Country Admin</strong>.</p>
+  </div>
+
+  <!-- Admin -->
+  <div class="acc open" id="ad-acc1">
+    <div class="acc-header" onclick="toggle('ad-acc1')">
+      <div class="acc-num n-indigo">1</div>
+      <div class="acc-title">Admin Commission Structure</div>
+      <div class="acc-chevron">⌄</div>
+    </div>
+    <div class="acc-body">
+      <div class="tbl-wrap">
+        <table class="tbl">
+          <thead><tr><th>Revenue Target</th><th>Basic Salary (USD)</th><th>Revenue Commission</th></tr></thead>
+          <tbody>
+            <tr><td><span class="val-gold">20M</span></td><td><span class="val-green">$50</span></td><td><span class="val-purple">–</span></td></tr>
+            <tr><td><span class="val-gold">50M</span></td><td><span class="val-green">$100</span></td><td><span class="val-green">$25</span></td></tr>
+            <tr><td><span class="val-gold">100M</span></td><td><span class="val-green">$150</span></td><td><span class="val-green">$100</span></td></tr>
+            <tr><td><span class="val-gold">200M</span></td><td><span class="val-green">$300</span></td><td><span class="val-green">$200</span></td></tr>
+            <tr><td><span class="val-gold">300M</span></td><td><span class="val-green">$500</span></td><td><span class="val-green">$250</span></td></tr>
+            <tr><td><span class="val-gold">500M</span></td><td><span class="val-green">$700</span></td><td><span class="val-green">$550</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <ul class="blist" style="margin-top:10px;">
+        <li><span class="dot dot-purple"></span><span>Admins earn a <strong>Basic Salary</strong> plus a <strong>Revenue Commission</strong> based on their monthly agency revenue target</span></li>
+        <li><span class="dot dot-green"></span><span>Both basic salary and commission increase as higher revenue targets are hit</span></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Super Admin -->
+  <div class="acc" id="ad-acc2">
+    <div class="acc-header" onclick="toggle('ad-acc2')">
+      <div class="acc-num n-purple">2</div>
+      <div class="acc-title">Super Admin Commission Structure</div>
+      <div class="acc-chevron">⌄</div>
+    </div>
+    <div class="acc-body">
+      <div class="info-box">
+        <div class="info-label">ℹ️ Overview</div>
+        <p>A Super Admin can have multiple Admins under them, and can also create and manage their own direct agencies.</p>
+      </div>
+      <ul class="blist" style="margin-top:10px;">
+        <li><span class="dot dot-green"></span><span>Earns the <strong>same as Admin (5%)</strong> from revenue generated by their <strong>direct invited agencies</strong></span></li>
+        <li><span class="dot dot-purple"></span><span>Additionally earns <strong>2% commission</strong> from the total revenue generated by <strong>all Admins under them</strong></span></li>
+        <li><span class="dot dot-red"></span><span>Super Admin will <strong>lose the status</strong> of Super Admin if they don't meet the targets defined by the company</span></li>
+      </ul>
+      <div class="amber-box">
+        <div class="amber-label">💰 Earnings Summary</div>
+        <p><span class="hl-green">5%</span> from direct agencies + <span class="hl-purple">2%</span> from all Admins under them</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Country Admin -->
+  <div class="acc" id="ad-acc3">
+    <div class="acc-header" onclick="toggle('ad-acc3')">
+      <div class="acc-num n-amber">3</div>
+      <div class="acc-title">Country Admin Commission Structure</div>
+      <div class="acc-chevron">⌄</div>
+    </div>
+    <div class="acc-body">
+      <div class="info-box">
+        <div class="info-label">ℹ️ Overview</div>
+        <p>A Country Admin can manage multiple Super Admins and can also bring their own direct agencies.</p>
+      </div>
+      <ul class="blist" style="margin-top:10px;">
+        <li><span class="dot dot-gold"></span><span>Earns <strong>1% commission</strong> from the total revenue generated by agencies under their entire team (Admins + Super Admins)</span></li>
+        <li><span class="dot dot-gold"></span><span>Also earns <strong>5% commission</strong> from revenue generated by their <strong>direct invited agencies</strong></span></li>
+      </ul>
+      <div class="amber-box">
+        <div class="amber-label">💰 Earnings Summary</div>
+        <p><span class="hl-gold">5%</span> from direct agencies + <span class="hl-gold">1%</span> from entire team revenue</p>
+      </div>
+      <div class="divider"></div>
+      <div class="sub-head" style="color:#d97706;border-color:#d97706;">How to Become Country Admin</div>
+      <div class="strict-box" style="background:linear-gradient(135deg,rgba(245,158,11,0.07),rgba(217,119,6,0.04));border-color:rgba(245,158,11,0.3);">
+        <div class="strict-label" style="color:#d97706;">📌 Requirements</div>
+        <p>To become a Country Admin, a Super Admin or Admin must either:</p>
+      </div>
+      <ul class="blist">
+        <li><span class="dot dot-gold"></span><span>Reach a minimum of <strong>1,000M revenue</strong>, OR</span></li>
+        <li><span class="dot dot-gold"></span><span>Deposit a <strong>$5,000 USD security</strong> to the company account (fully refundable)</span></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="footer">© 2026 &nbsp;<span class="rl">Rizz Live</span> &nbsp;·&nbsp; All Rights Reserved</div>
+</div>
+
+
+<script>
+// ── Page navigation ──────────────────────────────
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(function(p){ p.classList.remove('active'); });
+  var t = document.getElementById(id);
+  if (t) { t.classList.add('active'); window.scrollTo({top:0,behavior:'smooth'}); }
+}
+
+function openLink(url) {
+  try {
+    var a = document.createElement('a');
+    a.href = url; a.target = '_blank'; a.rel = 'noopener noreferrer';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  } catch(e) { window.location.href = url; }
+}
+
+function toggle(id) {
+  var el = document.getElementById(id);
+  if (el) el.classList.toggle('open');
+}
+
+// ── Twinkling Stars ───────────────────────────────
+(function() {
+  var canvas = document.getElementById('stars-canvas');
+  var ctx = canvas.getContext('2d');
+  var W, H;
+  var stars = [];
+  var STAR_COLORS = [
+    '#a855f7','#6366f1','#ec4899','#f59e0b',
+    '#10b981','#3b82f6','#f43f5e','#8b5cf6',
+    '#06b6d4','#84cc16','#fff','#c084fc',
+    '#fbbf24','#34d399','#60a5fa','#f472b6'
+  ];
+
+  function resize() {
+    W = canvas.width  = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+    // Re-seed stars on resize
+    stars = [];
+    seedStars();
+  }
+  window.addEventListener('resize', resize);
+
+  function rand(a, b) { return a + Math.random() * (b - a); }
+  function randInt(a, b) { return Math.floor(rand(a, b)); }
+
+  function createStar() {
+    return {
+      x: rand(0, W),
+      y: rand(0, H),
+      r: rand(0.6, 2.5),
+      color: STAR_COLORS[randInt(0, STAR_COLORS.length)],
+      phase: rand(0, Math.PI * 2),
+      speed: rand(0.4, 2.2),  // twinkle speed
+      baseAlpha: rand(0.4, 1.0)
+    };
+  }
+
+  function seedStars() {
+    var count = Math.floor((W * H) / 5000);
+    count = Math.max(80, Math.min(count, 250));
+    for (var i = 0; i < count; i++) {
+      stars.push(createStar());
+    }
+  }
+
+  resize();
+
+  var last = 0;
+  function animate(ts) {
+    var dt = (ts - last) / 1000;
+    last = ts;
+    ctx.clearRect(0, 0, W, H);
+
+    for (var i = 0; i < stars.length; i++) {
+      var s = stars[i];
+      s.phase += s.speed * dt;
+      var alpha = s.baseAlpha * (0.15 + 0.85 * Math.pow(Math.max(0, Math.sin(s.phase)), 1.5));
+      var scale = 0.5 + 0.5 * Math.max(0, Math.sin(s.phase));
+
+      ctx.save();
+      ctx.globalAlpha = alpha;
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.r * scale, 0, Math.PI * 2);
+      ctx.fillStyle = s.color;
+      ctx.shadowColor = s.color;
+      ctx.shadowBlur = s.r * 5 * scale;
+      ctx.fill();
+
+      // Cross / sparkle effect for larger stars
+      if (s.r > 1.6 && scale > 0.7) {
+        ctx.globalAlpha = alpha * 0.6;
+        ctx.strokeStyle = s.color;
+        ctx.lineWidth = 0.5;
+        var len = s.r * 4 * scale;
+        ctx.beginPath();
+        ctx.moveTo(s.x - len, s.y); ctx.lineTo(s.x + len, s.y);
+        ctx.moveTo(s.x, s.y - len); ctx.lineTo(s.x, s.y + len);
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+    requestAnimationFrame(animate);
+  }
+
+  requestAnimationFrame(animate);
+})();
+</script>
+</body>
+</html>
